@@ -4,14 +4,8 @@ Analyses past decisions for cognitive biases and returns:
 {biases[], alignment_score, gut_check_question}
 """
 
-import os
 import json
-from google import genai
-from google.genai.types import GenerateContentConfig
-
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
-MODEL = "gemini-2.0-flash"
+from agents.groq_client import client, MODEL
 
 SYSTEM_INSTRUCTION = """You are a behavioral psychology expert specialising in cognitive biases
 and decision-making patterns. Given the user's current decision and their past decisions,
@@ -42,24 +36,32 @@ async def run_psychology_agent(
         "and provide a gut-check question. Return JSON only."
     )
 
-    response = client.models.generate_content(
+    response = client.chat.completions.create(
         model=MODEL,
-        contents=prompt,
-        config=GenerateContentConfig(
-            system_instruction=SYSTEM_INSTRUCTION,
-            max_output_tokens=500,
-        ),
+        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_INSTRUCTION,
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        temperature=0.3,
+        response_format={"type": "json_object"},
     )
 
+
     try:
-        text = response.text.strip()
+        text = response.choices[0].message.content
         if text.startswith("```"):
             text = text.split("\n", 1)[1]
             text = text.rsplit("```", 1)[0]
         return json.loads(text)
-    except (json.JSONDecodeError, IndexError):
+    except Exception:
         return {
             "biases": [{"name": "Parse Error", "description": "Could not parse agent response"}],
             "alignment_score": 5,
-            "gut_check_question": response.text if response.text else "No response from model",
+            "gut_check_question": text if text else "No response from model",
         }

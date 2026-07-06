@@ -4,14 +4,8 @@ Evaluates risk factors for a decision and returns structured JSON:
 {score_1_to_10, best_case, worst_case, recommendation}
 """
 
-import os
 import json
-from google import genai
-from google.genai.types import GenerateContentConfig
-
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
-MODEL = "gemini-2.0-flash"
+from agents.groq_client import client, MODEL
 
 SYSTEM_INSTRUCTION = """You are a risk assessment specialist. Evaluate the risk profile of the
 user's decision based on their stated risk tolerance, priority, and timeline.
@@ -40,25 +34,32 @@ async def run_risk_agent(
         "Provide a thorough risk assessment as JSON only."
     )
 
-    response = client.models.generate_content(
+    response = client.chat.completions.create(
         model=MODEL,
-        contents=prompt,
-        config=GenerateContentConfig(
-            system_instruction=SYSTEM_INSTRUCTION,
-            max_output_tokens=500,
-        ),
+        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_INSTRUCTION,
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        temperature=0.3,
+        response_format={"type": "json_object"},
     )
 
     try:
-        text = response.text.strip()
+        text = response.choices[0].message.content
         if text.startswith("```"):
             text = text.split("\n", 1)[1]
             text = text.rsplit("```", 1)[0]
         return json.loads(text)
-    except (json.JSONDecodeError, IndexError):
+    except Exception:
         return {
             "score_1_to_10": 5,
             "best_case": "Unable to parse risk data",
             "worst_case": "Analysis encountered an error",
-            "recommendation": response.text if response.text else "No response from model",
+            "recommendation": text if text else "No response from model",
         }

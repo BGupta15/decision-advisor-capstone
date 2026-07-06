@@ -5,15 +5,9 @@ to retrieve Market, Risk, and Psychology insights in one consolidated request.
 This mitigates 429 rate limit errors by reducing calls per decision from 3 down to 1.
 """
 
-import os
 import json
 import asyncio
-from google import genai
-from google.genai import types
-
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
-MODEL = "gemini-2.0-flash"
+from agents.groq_client import client, MODEL
 
 SYSTEM_INSTRUCTION = """You are a Decision Intelligence Orchestrator. Your job is to analyze the user's decision context from three key perspectives:
 1. MARKET ANALYSIS: Use the Google Search grounding tool to research real-time market landscape, competitor trends, and economic context.
@@ -100,25 +94,30 @@ async def run_orchestrator(
         "Generate the Market, Risk, and Psychology evaluations. Use Google Search to ground the Market Opportunities and Threats."
     )
 
-    google_search_tool = types.Tool(google_search=types.GoogleSearch())
-
     # Single robust call to Gemini with automatic rate-limit retry support
-    async def fetch_unified_analysis(retries=3, delay=15.0):
+    async def fetch_unified_analysis(retries=1, delay=15.0):
         import re
         for attempt in range(retries):
             try:
                 # Wrap block in loop
-                response = client.models.generate_content(
+                response = client.chat.completions.create(
                     model=MODEL,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=SYSTEM_INSTRUCTION,
-                        max_output_tokens=700, # Increased slightly to accommodate single response
-                        tools=[google_search_tool],
-                    ),
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": SYSTEM_INSTRUCTION,
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt,
+                        },
+                    ],
+                    temperature=0.3,
+                    response_format={"type": "json_object"},
                 )
                 return response
             except Exception as e:
+                print(repr(e))
                 err_msg = str(e)
                 if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
                     if attempt < retries - 1:
@@ -132,13 +131,13 @@ async def run_orchestrator(
     response = await fetch_unified_analysis()
 
     try:
-        text = response.text.strip()
+        text = response.choices[0].message.content
         if text.startswith("```"):
             text = text.split("\n", 1)[1]
             text = text.rsplit("```", 1)[0]
         data = json.loads(text)
     except Exception as parse_error:
-        print(f"[Orchestrator] Parse failed. Raw response: {response.text}")
+        print(f"[Orchestrator] Parse failed. Raw response: {text}")
         # Build graceful fallback JSON in case of formatting anomalies
         data = {
             "market": {
