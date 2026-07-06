@@ -7,779 +7,173 @@
   <meta name="description" content="Get AI-powered analysis on your decisions with market intelligence, risk assessment, and cognitive bias detection." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Oranienbaum&family=Geist:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    (function() {
+      var saved = localStorage.getItem('da-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
   <style>
-    /* ── Reset & Variables ──────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg-primary: #0a0a0f;
-      --bg-secondary: #12121a;
-      --bg-card: #1a1a2e;
-      --bg-card-hover: #222240;
-      --bg-input: #16162a;
-      --border: #2a2a4a;
-      --border-glow: #6c63ff40;
-      --text-primary: #eaeaff;
-      --text-secondary: #9898b8;
-      --text-muted: #6868a0;
-      --accent: #6c63ff;
-      --accent-light: #8b83ff;
-      --accent-glow: #6c63ff30;
-      --market-accent: #00d4aa;
-      --market-bg: #00d4aa10;
-      --risk-accent: #ff6b6b;
-      --risk-bg: #ff6b6b10;
-      --psych-accent: #ffd93d;
-      --psych-bg: #ffd93d10;
-      --verdict-accent: #6c63ff;
-      --verdict-bg: #6c63ff10;
-      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --radius: 16px;
-      --radius-sm: 10px;
+      --bg-primary: #FCFCFB; --bg-secondary: #F3F4F4; --bg-card: #FFFFFF;
+      --bg-input: #FFFFFF; --border: #E2E4E5; --border-focus: #0F5C56;
+      --text-primary: #1B1E1F; --text-secondary: #5A5E60; --text-muted: #8B9093;
+      --accent: #0F5C56; --accent-light: #147068;
+      --accent-subtle: rgba(15,92,86,0.08); --accent-glow: rgba(15,92,86,0.12);
+      --market-accent: #0F5C56; --market-bg: rgba(15,92,86,0.07);
+      --risk-accent: #A83232; --risk-bg: rgba(168,50,50,0.06);
+      --psych-accent: #6B5B00; --psych-bg: rgba(107,91,0,0.06);
+      --verdict-accent: #0F5C56; --verdict-bg: rgba(15,92,86,0.07);
+      --font-display: 'Oranienbaum', 'Georgia', serif;
+      --font-body: 'Geist', 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      --radius: 12px; --radius-sm: 8px;
+      --shadow-sm: 0 1px 3px rgba(27,30,31,0.06);
+      --shadow-md: 0 4px 16px rgba(27,30,31,0.08);
+      --shadow-lg: 0 8px 32px rgba(27,30,31,0.1);
     }
-
+    [data-theme='dark'] {
+      --bg-primary: #0a0a0f; --bg-secondary: #12121a; --bg-card: #1a1a2e;
+      --bg-input: #16162a; --border: #2a2a4a; --border-focus: #8b83ff;
+      --text-primary: #eaeaff; --text-secondary: #9898b8; --text-muted: #6868a0;
+      --accent: #6c63ff; --accent-light: #8b83ff; --accent-subtle: rgba(108,99,255,0.12);
+      --accent-glow: rgba(108,99,255,0.2); --market-accent: #00d4aa; --market-bg: rgba(0,212,170,0.1);
+      --risk-accent: #ff6b6b; --risk-bg: rgba(255,107,107,0.1); --psych-accent: #ffd93d;
+      --psych-bg: rgba(255,217,61,0.1); --verdict-accent: #6c63ff; --verdict-bg: rgba(108,99,255,0.1);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.4); --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+    }
+    [data-theme='dark'] body::before { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+    [data-theme='dark'] .gut-check { background: var(--bg-primary); }
+    [data-theme='dark'] .header-icon { border-color: rgba(108,99,255,0.25); }
+    [data-theme='dark'] .bias-tag { border-color: rgba(255,217,61,0.2); }
     html { scroll-behavior: smooth; }
-
-    body {
-      font-family: var(--font);
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      line-height: 1.6;
-      overflow-x: hidden;
+    body { font-family: var(--font-body); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-light)); z-index: 100; }
+    .container { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 56px 24px 80px; }
+    .theme-toggle { position: fixed; top: 16px; right: 20px; z-index: 200; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s; box-shadow: var(--shadow-sm); }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); box-shadow: var(--shadow-md); }
+    .theme-toggle svg {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        opacity: 0;
+        transition: opacity 0.2s ease, transform 0.3s;
     }
-
-    /* ── Ambient Background ─────────────────────────────────────────── */
-    body::before {
-      content: '';
-      position: fixed;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background:
-        radial-gradient(ellipse at 20% 50%, #6c63ff08 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, #00d4aa06 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 80%, #ff6b6b05 0%, transparent 50%);
-      animation: ambientDrift 20s ease-in-out infinite alternate;
-      pointer-events: none;
-      z-index: 0;
+    .theme-toggle:hover svg {
+        transform: rotate(20deg);
     }
-
-    @keyframes ambientDrift {
-      0%   { transform: translate(0, 0) rotate(0deg); }
-      100% { transform: translate(-3%, 2%) rotate(3deg); }
+    .theme-toggle .icon-moon {
+        opacity: 1;
     }
-
-    /* ── Layout ─────────────────────────────────────────────────────── */
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 40px 20px 60px;
+    [data-theme="dark"] .theme-toggle .icon-moon {
+        opacity: 0;
     }
-
-    /* ── Header ─────────────────────────────────────────────────────── */
-    .header {
-      text-align: center;
-      margin-bottom: 48px;
-      animation: fadeInDown 0.8s ease-out;
+    [data-theme="dark"] .theme-toggle .icon-sun {
+        opacity: 1;
     }
-
-    .header-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-      display: block;
-      filter: drop-shadow(0 0 20px var(--accent-glow));
-    }
-
-    .header h1 {
-      font-size: 2rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--accent-light), var(--market-accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.5px;
-    }
-
-    .header p {
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      margin-top: 8px;
-      font-weight: 300;
-    }
-
-    /* ── Chat Container ─────────────────────────────────────────────── */
-    #chat-container {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    /* ── Chat Bubbles ───────────────────────────────────────────────── */
-    .chat-bubble {
-      max-width: 85%;
-      padding: 16px 20px;
-      border-radius: var(--radius);
-      animation: bubbleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      line-height: 1.5;
-    }
-
-    .chat-bubble.agent {
-      align-self: flex-start;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-      color: var(--text-primary);
-    }
-
-    .chat-bubble.agent .label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: var(--accent);
-      margin-bottom: 6px;
-    }
-
-    .chat-bubble.user {
-      align-self: flex-end;
-      background: linear-gradient(135deg, var(--accent), #5a52e0);
-      border-bottom-right-radius: 4px;
-      color: #fff;
-      font-weight: 500;
-    }
-
-    @keyframes bubbleIn {
-      0%   { opacity: 0; transform: translateY(16px) scale(0.95); }
-      100% { opacity: 1; transform: translateY(0)   scale(1); }
-    }
-
-    /* ── Input Area ─────────────────────────────────────────────────── */
-    .input-area {
-      display: flex;
-      gap: 10px;
-      margin-top: 8px;
-      animation: fadeInUp 0.4s ease-out;
-    }
-
-    .input-area input,
-    .input-area select {
-      flex: 1;
-      padding: 14px 18px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--bg-input);
-      color: var(--text-primary);
-      font-family: var(--font);
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.3s, box-shadow 0.3s;
-    }
-
-    .input-area input::placeholder {
-      color: var(--text-muted);
-    }
-
-    .input-area input:focus,
-    .input-area select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    .input-area select {
-      cursor: pointer;
-      -webkit-appearance: none;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239898b8'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      padding-right: 40px;
-    }
-
-    .input-area select option {
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-    }
-
-    .input-area textarea {
-      flex: 1;
-      padding: 14px 18px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--bg-input);
-      color: var(--text-primary);
-      font-family: var(--font);
-      font-size: 0.95rem;
-      outline: none;
-      resize: vertical;
-      min-height: 80px;
-      transition: border-color 0.3s, box-shadow 0.3s;
-    }
-
-    .input-area textarea::placeholder {
-      color: var(--text-muted);
-    }
-
-    .input-area textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    .btn-send {
-      padding: 14px 24px;
-      border: none;
-      border-radius: var(--radius-sm);
-      background: linear-gradient(135deg, var(--accent), #5a52e0);
-      color: #fff;
-      font-family: var(--font);
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.3s;
-      white-space: nowrap;
-    }
-
-    .btn-send:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 24px var(--accent-glow);
-    }
-
-    .btn-send:active {
-      transform: translateY(0);
-    }
-
-    /* ── Spinner ─────────────────────────────────────────────────────── */
-    .spinner-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      padding: 48px 0;
-      animation: fadeInUp 0.5s ease-out;
-    }
-
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      animation: spin 0.8s linear infinite;
-    }
-
-    .spinner-text {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    .spinner-sub {
-      color: var(--text-muted);
-      font-size: 0.78rem;
-    }
-
+    .header { text-align: center; margin-bottom: 52px; animation: fadeInDown 0.6s ease-out; }
+    .header-icon { width: 56px; height: 56px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: var(--accent-subtle); border-radius: 16px; border: 1px solid rgba(15,92,86,0.15); }
+    .header-icon svg { width: 28px; height: 28px; color: var(--accent); }
+    .header h1 { font-family: var(--font-display); font-size: 2.4rem; font-weight: 400; color: var(--text-primary); letter-spacing: -0.3px; line-height: 1.2; }
+    .header p { color: var(--text-secondary); font-size: 0.95rem; margin-top: 10px; }
+    .form-wrapper { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px; margin-bottom: 24px; box-shadow: var(--shadow-sm); animation: fadeInUp 0.6s ease-out; }
+    .form-group { margin-bottom: 24px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 13px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-input); color: var(--text-primary); font-family: var(--font-body); font-size: 0.95rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-group input::placeholder, .form-group textarea::placeholder { color: var(--text-muted); }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group select { cursor: pointer; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238B9093'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+    .advanced-toggle { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 14px 0; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 20px; user-select: none; transition: color 0.2s; }
+    .advanced-toggle:hover { color: var(--text-secondary); }
+    .advanced-toggle svg { width: 16px; height: 16px; transition: transform 0.3s; fill: currentColor; }
+    .advanced-toggle.active svg { transform: rotate(180deg); }
+    .advanced-fields { display: none; margin-top: 16px; animation: slideDown 0.3s ease-out; }
+    .advanced-fields.show { display: block; }
+    @keyframes slideDown { 0% { opacity: 0; transform: translateY(-8px); } 100% { opacity: 1; transform: translateY(0); } }
+    .btn-submit { width: 100%; padding: 15px; border: none; border-radius: var(--radius-sm); background: var(--accent); color: #FFFFFF; font-family: var(--font-body); font-weight: 600; font-size: 0.95rem; cursor: pointer; margin-top: 24px; transition: background 0.2s, box-shadow 0.2s, transform 0.15s; letter-spacing: 0.02em; }
+    .btn-submit:hover { background: var(--accent-light); box-shadow: 0 4px 16px var(--accent-glow); transform: translateY(-1px); }
+    .btn-submit:active { transform: translateY(0); }
+    #chat-container { display: flex; flex-direction: column; gap: 12px; }
+    .chat-bubble { max-width: 85%; padding: 16px 20px; border-radius: var(--radius); animation: bubbleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); line-height: 1.5; }
+    .chat-bubble.agent { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--text-primary); box-shadow: var(--shadow-sm); }
+    .chat-bubble.agent .label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent); margin-bottom: 6px; }
+    .chat-bubble.user { align-self: flex-end; background: var(--accent); border-bottom-right-radius: 4px; color: #FFFFFF; font-weight: 500; }
+    @keyframes bubbleIn { 0% { opacity: 0; transform: translateY(16px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    .spinner-container { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 52px 0; animation: fadeInUp 0.5s ease-out; }
+    .spinner { width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
+    .spinner-text { color: var(--text-primary); font-size: 0.95rem; font-weight: 600; }
+    .spinner-sub { color: var(--text-muted); font-size: 0.82rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Report Cards ───────────────────────────────────────────────── */
-    #report-section {
-      display: none;
-      margin-top: 40px;
-      animation: fadeInUp 0.6s ease-out;
-    }
-
+    #report-section { display: none; margin-top: 20px; animation: fadeInUp 0.6s ease-out; }
     #report-section.visible { display: block; }
-
-    .report-title {
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 28px;
-      background: linear-gradient(135deg, var(--accent-light), var(--market-accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .report-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .report-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      transition: transform 0.25s, border-color 0.3s, box-shadow 0.3s;
-      animation: cardIn 0.5s ease-out both;
-    }
-
-    .report-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-    }
-
+    .report-title { text-align: center; font-family: var(--font-display); font-size: 1.8rem; font-weight: 400; margin-bottom: 32px; color: var(--text-primary); }
+    .report-grid { display: flex;flex-direction: column; gap: 20px;}
+    .report-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; transition: box-shadow 0.3s, border-color 0.3s; animation: cardIn 0.5s ease-out both; box-shadow: var(--shadow-sm); }
+    .report-card:hover { box-shadow: var(--shadow-md); }
     .report-card:nth-child(1) { animation-delay: 0.1s; }
     .report-card:nth-child(2) { animation-delay: 0.2s; }
     .report-card:nth-child(3) { animation-delay: 0.3s; }
-    .report-card:nth-child(4) { animation-delay: 0.4s; grid-column: 1 / -1; }
-
-    .report-card:nth-child(1) { border-color: var(--market-accent)30; }
-    .report-card:nth-child(1):hover { border-color: var(--market-accent); }
-    .report-card:nth-child(2) { border-color: var(--risk-accent)30; }
-    .report-card:nth-child(2):hover { border-color: var(--risk-accent); }
-    .report-card:nth-child(3) { border-color: var(--psych-accent)30; }
-    .report-card:nth-child(3):hover { border-color: var(--psych-accent); }
-    .report-card:nth-child(4) { border-color: var(--verdict-accent)30; }
-    .report-card:nth-child(4):hover { border-color: var(--verdict-accent); }
-
-    @keyframes cardIn {
-      0%   { opacity: 0; transform: translateY(24px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .card-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-
-    .card-icon.market  { background: var(--market-bg);  }
-    .card-icon.risk    { background: var(--risk-bg);    }
-    .card-icon.psych   { background: var(--psych-bg);   }
+    .report-card:nth-child(1) { border-top: 2px solid var(--market-accent); }
+    .report-card:nth-child(2) { border-top: 2px solid var(--risk-accent); }
+    .report-card:nth-child(3) { border-top: 2px solid var(--psych-accent); }
+    @keyframes cardIn { 0% { opacity: 0; transform: translateY(16px); } 100% { opacity: 1; transform: translateY(0); } }
+    .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .card-icon svg { width: 18px; height: 18px; }
+    .card-icon.market { background: var(--market-bg); }
+    .card-icon.market svg { color: var(--market-accent); }
+    .card-icon.risk { background: var(--risk-bg); }
+    .card-icon.risk svg { color: var(--risk-accent); }
+    .card-icon.psych { background: var(--psych-bg); }
+    .card-icon.psych svg { color: var(--psych-accent); }
     .card-icon.verdict { background: var(--verdict-bg); }
-
-    .card-label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .card-label.market  { color: var(--market-accent);  }
-    .card-label.risk    { color: var(--risk-accent);    }
-    .card-label.psych   { color: var(--psych-accent);   }
+    .card-icon.verdict svg { color: var(--verdict-accent); }
+    .card-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; }
+    .card-label.market { color: var(--market-accent); }
+    .card-label.risk { color: var(--risk-accent); }
+    .card-label.psych { color: var(--psych-accent); }
     .card-label.verdict { color: var(--verdict-accent); }
-
-    /* ── Form Styling ───────────────────────────────────────────────── */
-    .form-wrapper {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 32px;
-      margin-bottom: 24px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-      animation: fadeInUp 0.6s ease-out;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.88rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text-primary);
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 14px 18px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--bg-input);
-      color: var(--text-primary);
-      font-family: var(--font);
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.3s, box-shadow 0.3s;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    .form-group textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    /* Select styles */
-    .form-group select {
-      cursor: pointer;
-      -webkit-appearance: none;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239898b8'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      padding-right: 40px;
-    }
-
-    /* Collapsible styles */
-    .advanced-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      padding: 12px 0;
-      font-size: 0.88rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      border-top: 1px solid var(--border);
-      margin-top: 16px;
-      user-select: none;
-      transition: color 0.2s;
-    }
-
-    .advanced-toggle:hover {
-      color: var(--text-primary);
-    }
-
-    .advanced-toggle svg {
-      width: 16px;
-      height: 16px;
-      transition: transform 0.3s;
-      fill: currentColor;
-    }
-
-    .advanced-toggle.active svg {
-      transform: rotate(180deg);
-    }
-
-    .advanced-fields {
-      display: none;
-      margin-top: 16px;
-      animation: slideDown 0.3s ease-out;
-    }
-
-    .advanced-fields.show {
-      display: block;
-    }
-
-    @keyframes slideDown {
-      0% { opacity: 0; transform: translateY(-8px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    .btn-submit {
-      width: 100%;
-      padding: 16px;
-      border: none;
-      border-radius: var(--radius-sm);
-      background: linear-gradient(135deg, var(--accent), #5a52e0);
-      color: #fff;
-      font-family: var(--font);
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 12px;
-      transition: transform 0.15s, box-shadow 0.3s;
-    }
-
-    .btn-submit:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 24px var(--accent-glow);
-    }
-
-    /* Spinner updates */
-    .spinner-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      padding: 48px 0;
-      animation: fadeInUp 0.5s ease-out;
-    }
-
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      animation: spin 0.8s linear infinite;
-    }
-
-    .spinner-text {
-      color: var(--text-primary);
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .spinner-sub {
-      color: var(--text-muted);
-      font-size: 0.82rem;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Report Cards ───────────────────────────────────────────────── */
-    #report-section {
-      display: none;
-      margin-top: 20px;
-      animation: fadeInUp 0.6s ease-out;
-    }
-
-    #report-section.visible { display: block; }
-
-    .report-title {
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 28px;
-      background: linear-gradient(135deg, var(--accent-light), var(--market-accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .report-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .report-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      transition: transform 0.25s, border-color 0.3s, box-shadow 0.3s;
-      animation: cardIn 0.5s ease-out both;
-    }
-
-    .report-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-    }
-
-    .report-card:nth-child(1) { animation-delay: 0.1s; }
-    .report-card:nth-child(2) { animation-delay: 0.2s; }
-    .report-card:nth-child(3) { animation-delay: 0.3s; }
-    .report-card:nth-child(4) { animation-delay: 0.4s; grid-column: 1 / -1; }
-
-    .report-card:nth-child(1) { border-color: var(--market-accent)30; }
-    .report-card:nth-child(1):hover { border-color: var(--market-accent); }
-    .report-card:nth-child(2) { border-color: var(--risk-accent)30; }
-    .report-card:nth-child(2):hover { border-color: var(--risk-accent); }
-    .report-card:nth-child(3) { border-color: var(--psych-accent)30; }
-    .report-card:nth-child(3):hover { border-color: var(--psych-accent); }
-    .report-card:nth-child(4) { border-color: var(--verdict-accent)30; }
-    .report-card:nth-child(4):hover { border-color: var(--verdict-accent); }
-
-    @keyframes cardIn {
-      0%   { opacity: 0; transform: translateY(24px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .card-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-
-    .card-icon.market  { background: var(--market-bg);  }
-    .card-icon.risk    { background: var(--risk-bg);    }
-    .card-icon.psych   { background: var(--psych-bg);   }
-    .card-icon.verdict { background: var(--verdict-bg); }
-
-    .card-label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .card-label.market  { color: var(--market-accent);  }
-    .card-label.risk    { color: var(--risk-accent);    }
-    .card-label.psych   { color: var(--psych-accent);   }
-    .card-label.verdict { color: var(--verdict-accent); }
-
-    .card-body {
-      color: var(--text-secondary);
-      font-size: 0.88rem;
-      line-height: 1.7;
-    }
-
-    .card-body strong {
-      color: var(--text-primary);
-      font-weight: 600;
-    }
-
-    .card-body ul {
-      list-style: none;
-      padding: 0;
-      margin: 8px 0;
-    }
-
-    .card-body ul li {
-      padding: 4px 0 4px 18px;
-      position: relative;
-    }
-
-    .card-body ul li::before {
-      content: '›';
-      position: absolute;
-      left: 0;
-      font-weight: 700;
-      color: var(--accent);
-    }
-
-    .risk-meter {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 12px 0;
-    }
-
-    .risk-bar {
-      flex: 1;
-      height: 8px;
-      background: var(--bg-primary);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .risk-bar-fill {
-      height: 100%;
-      border-radius: 4px;
-      transition: width 1s ease-out;
-      background: linear-gradient(90deg, var(--market-accent), var(--psych-accent), var(--risk-accent));
-    }
-
-    .risk-score {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--text-primary);
-      min-width: 45px;
-      text-align: right;
-    }
-
-    .verdict-text {
-      white-space: pre-line;
-      font-size: 0.9rem;
-      line-height: 1.8;
-    }
-
-    .bias-tag {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      background: var(--psych-bg);
-      border: 1px solid var(--psych-accent)40;
-      color: var(--psych-accent);
-      font-size: 0.78rem;
-      font-weight: 600;
-      margin: 4px 4px 4px 0;
-    }
-
-    .gut-check {
-      margin-top: 14px;
-      padding: 14px 18px;
-      background: var(--bg-primary);
-      border-radius: var(--radius-sm);
-      border-left: 3px solid var(--psych-accent);
-      font-style: italic;
-      color: var(--text-primary);
-      font-size: 0.9rem;
-    }
-
-    /* ── Reset Button ───────────────────────────────────────────────── */
-    .btn-reset {
-      display: block;
-      margin: 36px auto 0;
-      padding: 14px 36px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: transparent;
-      color: var(--text-secondary);
-      font-family: var(--font);
-      font-weight: 500;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .btn-reset:hover {
-      border-color: var(--accent);
-      color: var(--accent-light);
-      background: var(--accent-glow);
-    }
-
-    /* ── Animations ─────────────────────────────────────────────────── */
-    @keyframes fadeInDown {
-      0%   { opacity: 0; transform: translateY(-20px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeInUp {
-      0%   { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
+    .card-body { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.7; }
+    .card-body strong { color: var(--text-primary); font-weight: 600; }
+    .card-body ul { list-style: none; padding: 0; margin: 8px 0; }
+    .card-body ul li { padding: 4px 0 4px 18px; position: relative; }
+    .card-body ul li::before { content: ''; position: absolute; left: 0; top: 12px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.5; }
+    .risk-meter { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+    .risk-bar { flex: 1; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden; }
+    .risk-bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease-out; background: linear-gradient(90deg, var(--market-accent), var(--psych-accent), var(--risk-accent)); }
+    .risk-score { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); min-width: 45px; text-align: right; }
+    .verdict-text { white-space: pre-line; font-size: 0.9rem; line-height: 1.8; }
+    .bias-tag { display: inline-block; padding: 4px 12px; border-radius: 20px; background: var(--psych-bg); border: 1px solid rgba(107,91,0,0.15); color: var(--psych-accent); font-size: 0.78rem; font-weight: 600; margin: 4px 4px 4px 0; }
+    .gut-check { margin-top: 14px; padding: 14px 18px; background: var(--bg-secondary); border-radius: var(--radius-sm); border-left: 3px solid var(--psych-accent); font-style: italic; color: var(--text-primary); font-size: 0.88rem; }
+    .btn-reset { display: block; margin: 40px auto 0; padding: 13px 36px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); font-family: var(--font-body); font-weight: 500; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; }
+    .btn-reset:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
+    @keyframes fadeInDown { 0% { opacity: 0; transform: translateY(-16px); } 100% { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(16px); } 100% { opacity: 1; transform: translateY(0); } }
     .hidden { display: none !important; }
-
-    /* ── Responsive ─────────────────────────────────────────────────── */
-    @media (max-width: 600px) {
-      .container { padding: 24px 16px 40px; }
-      .header h1 { font-size: 1.5rem; }
-      .report-grid { grid-template-columns: 1fr; }
-      .report-card:nth-child(4) { grid-column: auto; }
-    }
+    .footer { text-align: center; margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.78rem; }
+    @media (max-width: 640px) { .container { padding: 40px 18px 60px; } .header h1 { font-size: 1.8rem; } .form-wrapper { padding: 28px 22px; } .report-grid { grid-template-columns: 1fr; } .report-card:nth-child(4) { grid-column: auto; } .report-card { padding: 22px; } }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle theme">
+      <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
     <header class="header">
-      <span class="header-icon">🧠</span>
+      <div class="header-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+      </div>
       <h1>Decision Advisor</h1>
       <p>AI-powered analysis with Market, Risk &amp; Psychology insights</p>
     </header>
-
-    <!-- Main Entry Form -->
     <form id="decision-form" class="form-wrapper" onsubmit="submitForm(event)">
       <div class="form-group">
         <label for="decision">What decision are you wrestling with? *</label>
         <input type="text" id="decision" required placeholder="e.g. Should I quit my job to start a SaaS startup?" />
       </div>
-
       <div class="form-group">
         <label for="risk_tolerance">Risk Tolerance *</label>
         <select id="risk_tolerance" required>
@@ -788,19 +182,14 @@
           <option value="High — Go big or go home">High — Go big or go home</option>
         </select>
       </div>
-
       <div class="form-group">
         <label for="priority">What is the #1 priority you want to protect? *</label>
-        <input type="text" id="priority" required placeholder="e.g. Financial security, career growth, health…" />
+        <input type="text" id="priority" required placeholder="e.g. Financial security, career growth, health..." />
       </div>
-
-      <!-- Advanced Toggle -->
       <div class="advanced-toggle" onclick="toggleAdvanced()">
         <span>Advanced Analysis Parameters (Optional)</span>
         <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg>
       </div>
-
-      <!-- Collapsible Advanced Options -->
       <div id="advanced-fields" class="advanced-fields">
         <div class="form-group">
           <label for="timeline">Timeline for this decision</label>
@@ -811,17 +200,13 @@
             <option value="Long-term (6+ months)">Long-term (6+ months)</option>
           </select>
         </div>
-
         <div class="form-group">
           <label for="past_decisions">Describe 2-3 past similar decisions (Helps detect cognitive biases)</label>
           <textarea id="past_decisions" placeholder="e.g. Last year I turned down a job promotion because of comfort. In 2024 I invested in high-risk stocks due to FOMO..."></textarea>
         </div>
       </div>
-
-      <button type="submit" class="btn-submit">Analyse Decision 🚀</button>
+      <button type="submit" class="btn-submit">Analyse Decision</button>
     </form>
-
-    <!-- Loading Area -->
     <div id="loading-area" class="hidden">
       <div class="spinner-container">
         <div class="spinner"></div>
@@ -829,222 +214,103 @@
         <div class="spinner-sub" id="loading-status">Spacing requests to stay within API limit...</div>
       </div>
     </div>
-
-    <!-- Error/Notice Bubble -->
     <div id="notice-area"></div>
-
-    <!-- Report Section -->
     <section id="report-section">
-      <h2 class="report-title">📋 Your Decision Report</h2>
+      <h2 class="report-title">Your Decision Report</h2>
       <div class="report-grid" id="report-grid"></div>
       <button class="btn-reset" id="btn-reset" onclick="resetApp()">Start New Analysis</button>
     </section>
+    <div class="footer">Decision Advisor — AI-Powered Decision Intelligence</div>
   </div>
-
   <script>
-    /* ── State ──────────────────────────────────────────────────────── */
-    const reportSection = document.getElementById('report-section');
-    const reportGrid = document.getElementById('report-grid');
-    const decisionForm = document.getElementById('decision-form');
-    const loadingArea = document.getElementById('loading-area');
-    const noticeArea = document.getElementById('notice-area');
-    const advancedFields = document.getElementById('advanced-fields');
-    const advancedToggle = document.querySelector('.advanced-toggle');
-
-    /* ── Interaction UI ──────────────────────────────────────────────── */
-    function toggleAdvanced() {
-      advancedFields.classList.toggle('show');
-      advancedToggle.classList.toggle('active');
+    var reportSection = document.getElementById('report-section');
+    var reportGrid = document.getElementById('report-grid');
+    var decisionForm = document.getElementById('decision-form');
+    var loadingArea = document.getElementById('loading-area');
+    var noticeArea = document.getElementById('notice-area');
+    var advancedFields = document.getElementById('advanced-fields');
+    var advancedToggle = document.querySelector('.advanced-toggle');
+    function toggleAdvanced() { advancedFields.classList.toggle('show'); advancedToggle.classList.toggle('active'); }
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('da-theme', next);
     }
-
     function addNoticeBubble(type, message) {
-      noticeArea.innerHTML = `
-        <div class="chat-bubble agent" style="margin-top: 16px; border-color: ${type === 'error' ? 'var(--risk-accent)' : 'var(--accent)'}">
-          <div class="label" style="color: ${type === 'error' ? 'var(--risk-accent)' : 'var(--accent)'}">${type === 'error' ? 'Error' : 'Advisor'}</div>
-          <div>${message}</div>
-        </div>
-      `;
-      setTimeout(() => noticeArea.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
+      noticeArea.innerHTML = '<div class="chat-bubble agent" style="margin-top:16px;border-color:' + (type === 'error' ? 'var(--risk-accent)' : 'var(--accent)') + '"><div class="label" style="color:' + (type === 'error' ? 'var(--risk-accent)' : 'var(--accent)') + '">' + (type === 'error' ? 'Error' : 'Advisor') + '</div><div>' + message + '</div></div>';
+      setTimeout(function() { noticeArea.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, 100);
     }
-
-    /* ── API Submission ─────────────────────────────────────────────── */
     async function submitForm(e) {
       e.preventDefault();
-      
       noticeArea.innerHTML = '';
       reportSection.classList.remove('visible');
-
-      // Get values and build payload
-      const decision = document.getElementById('decision').value.trim();
-      const risk_tolerance = document.getElementById('risk_tolerance').value;
-      const priority = document.getElementById('priority').value.trim();
-      
-      // Provide clean defaults if optional elements are empty
-      const timeline = document.getElementById('timeline').value || "Medium (1-6 months)";
-      const past_decisions = document.getElementById('past_decisions').value.trim() || "No past decision context provided.";
-
-      const payload = { decision, risk_tolerance, priority, timeline, past_decisions };
-
-      // Hide form & show loader
+      var decision = document.getElementById('decision').value.trim();
+      var risk_tolerance = document.getElementById('risk_tolerance').value;
+      var priority = document.getElementById('priority').value.trim();
+      var timeline = document.getElementById('timeline').value || "Medium (1-6 months)";
+      var past_decisions = document.getElementById('past_decisions').value.trim() || "No past decision context provided.";
+      var payload = { decision: decision, risk_tolerance: risk_tolerance, priority: priority, timeline: timeline, past_decisions: past_decisions };
       decisionForm.classList.add('hidden');
       loadingArea.classList.remove('hidden');
       updateSpinnerStatus();
-
       try {
-        const res = await fetch('/decide', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await res.json();
-
-        // Hide loading
+        var res = await fetch('/decide', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        var data = await res.json();
         loadingArea.classList.add('hidden');
-
         if (data.error) {
           decisionForm.classList.remove('hidden');
-          // Check if it's a rate limit error to explain it nicely
           if (data.error.includes("429") || data.error.includes("RESOURCE_EXHAUSTED")) {
-            addNoticeBubble('error', '⏳ <strong>API Quota Restricting Access:</strong> The free Gemini API quota is temporarily exhausted. Please wait 30 seconds and click Analyse again.');
+            addNoticeBubble('error', '<strong>API Quota Restricting Access:</strong> The free Gemini API quota is temporarily exhausted. Please wait 30 seconds and try again.');
           } else {
-            addNoticeBubble('error', `⚠️ Something went wrong: ${data.error}`);
+            addNoticeBubble('error', '<strong>Something went wrong:</strong> ' + data.error);
           }
           return;
         }
-
         renderReport(data);
       } catch (err) {
         loadingArea.classList.add('hidden');
         decisionForm.classList.remove('hidden');
-        addNoticeBubble('error', `⚠️ Network error: ${err.message}`);
+        addNoticeBubble('error', '<strong>Network error:</strong> ' + err.message);
       }
     }
-
-    /* ── Spinner Status Updates ───────────────────────────────────────── */
-    let statusInterval;
+    var statusInterval;
     function updateSpinnerStatus() {
-      const titles = [
-        "Consulting Market Agent...",
-        "Querying Real-Time Grounded Google Search...",
-        "Analyzing Risk Profile and Recommendation...",
-        "Evaluating Psychological Cognitive Biases...",
-        "Synthesizing Final Advisor Verdict..."
-      ];
-      let step = 0;
-      const titleEl = document.getElementById('loading-title');
-      const statusEl = document.getElementById('loading-status');
-
+      var titles = ["Consulting Market Agent...", "Querying Real-Time Grounded Google Search...", "Analyzing Risk Profile and Recommendation...", "Evaluating Psychological Cognitive Biases...", "Synthesizing Final Advisor Verdict..."];
+      var step = 0;
+      var titleEl = document.getElementById('loading-title');
+      var statusEl = document.getElementById('loading-status');
       titleEl.textContent = titles[0];
       statusEl.textContent = "Running agents sequentially with safety buffers to prevent rate limits...";
-
       if (statusInterval) clearInterval(statusInterval);
-      
-      statusInterval = setInterval(() => {
-        step++;
-        if (step < titles.length) {
-          titleEl.textContent = titles[step];
-        } else {
-          statusEl.textContent = "Almost complete. Structuring final card layouts...";
-          clearInterval(statusInterval);
-        }
-      }, 5000);
+      statusInterval = setInterval(function() { step++; if (step < titles.length) { titleEl.textContent = titles[step]; } else { statusEl.textContent = "Almost complete. Structuring final card layouts..."; clearInterval(statusInterval); } }, 5000);
     }
-
-    /* ── Render Report ─────────────────────────────────────────────── */
+    var icons = {
+      market: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+      risk: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+      psych: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+      verdict: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><polyline points="1 7 5 3 9 7"/><polyline points="15 7 19 3 23 7"/><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>'
+    };
     function renderReport(data) {
       if (statusInterval) clearInterval(statusInterval);
-
-      const market = data.market || {};
-      const risk = data.risk || {};
-      const psych = data.psychology || {};
-      const verdict = data.verdict || '';
-
-      const riskScore = risk.score_1_to_10 || 5;
-      const riskPercent = riskScore * 10;
-
-      // Build biases HTML
-      const biases = psych.biases || [];
-      const biasesHtml = biases.map(b =>
-        `<span class="bias-tag">${b.name || 'Unknown'}</span>`
-      ).join('');
-      const biasDetails = biases.map(b =>
-        `<li><strong>${b.name || 'Unknown'}:</strong> ${b.description || ''}</li>`
-      ).join('');
-
-      reportGrid.innerHTML = `
-        <!-- Market Card -->
-        <div class="report-card" id="card-market">
-          <div class="card-header">
-            <div class="card-icon market">📈</div>
-            <div class="card-label market">Market Analysis</div>
-          </div>
-          <div class="card-body">
-            <strong>Opportunities</strong>
-            <ul>${(market.opportunities || []).map(o => `<li>${o}</li>`).join('')}</ul>
-            <strong>Threats</strong>
-            <ul>${(market.threats || []).map(t => `<li>${t}</li>`).join('')}</ul>
-            <strong>Timing:</strong> ${market.timing || 'N/A'}
-          </div>
-        </div>
-
-        <!-- Risk Card -->
-        <div class="report-card" id="card-risk">
-          <div class="card-header">
-            <div class="card-icon risk">⚡</div>
-            <div class="card-label risk">Risk Assessment</div>
-          </div>
-          <div class="card-body">
-            <div class="risk-meter">
-              <div class="risk-bar"><div class="risk-bar-fill" style="width: 0%"></div></div>
-              <div class="risk-score">${riskScore}/10</div>
-            </div>
-            <strong>Best Case:</strong> ${risk.best_case || 'N/A'}
-            <br/><br/>
-            <strong>Worst Case:</strong> ${risk.worst_case || 'N/A'}
-            <br/><br/>
-            <strong>Recommendation:</strong> ${risk.recommendation || 'N/A'}
-          </div>
-        </div>
-
-        <!-- Psychology Card -->
-        <div class="report-card" id="card-psychology">
-          <div class="card-header">
-            <div class="card-icon psych">🧠</div>
-            <div class="card-label psych">Psychology Check</div>
-          </div>
-          <div class="card-body">
-            <strong>Biases Detected</strong>
-            <div style="margin: 8px 0 12px">${biasesHtml || '<span style="color:var(--text-muted)">None detected</span>'}</div>
-            <ul>${biasDetails}</ul>
-            <strong>Priority Alignment:</strong> ${psych.alignment_score || '?'}/10
-            <div class="gut-check">❓ ${psych.gut_check_question || 'No question generated.'}</div>
-          </div>
-        </div>
-
-        <!-- Verdict Card -->
-        <div class="report-card" id="card-verdict">
-          <div class="card-header">
-            <div class="card-icon verdict">⚖️</div>
-            <div class="card-label verdict">Final Verdict</div>
-          </div>
-          <div class="card-body">
-            <div class="verdict-text">${verdict}</div>
-          </div>
-        </div>
-      `;
-
+      var market = data.market || {};
+      var risk = data.risk || {};
+      var psych = data.psychology || {};
+      var verdict = data.verdict || '';
+      var riskScore = risk.score_1_to_10 || 5;
+      var riskPercent = riskScore * 10;
+      var biases = psych.biases || [];
+      var biasesHtml = biases.map(function(b) { return '<span class="bias-tag">' + (b.name || 'Unknown') + '</span>'; }).join('');
+      var biasDetails = biases.map(function(b) { return '<li><strong>' + (b.name || 'Unknown') + ':</strong> ' + (b.description || '') + '</li>'; }).join('');
+      reportGrid.innerHTML =
+        '<div class="report-card" id="card-market"><div class="card-header"><div class="card-icon market">' + icons.market + '</div><div class="card-label market">Market Analysis</div></div><div class="card-body"><strong>Opportunities</strong><ul>' + (market.opportunities || []).map(function(o) { return '<li>' + o + '</li>'; }).join('') + '</ul><strong>Threats</strong><ul>' + (market.threats || []).map(function(t) { return '<li>' + t + '</li>'; }).join('') + '</ul><strong>Timing:</strong> ' + (market.timing || 'N/A') + '</div></div>' +
+        '<div class="report-card" id="card-risk"><div class="card-header"><div class="card-icon risk">' + icons.risk + '</div><div class="card-label risk">Risk Assessment</div></div><div class="card-body"><div class="risk-meter"><div class="risk-bar"><div class="risk-bar-fill" style="width:0%"></div></div><div class="risk-score">' + riskScore + '/10</div></div><strong>Best Case:</strong> ' + (risk.best_case || 'N/A') + '<br/><br/><strong>Worst Case:</strong> ' + (risk.worst_case || 'N/A') + '<br/><br/><strong>Recommendation:</strong> ' + (risk.recommendation || 'N/A') + '</div></div>' +
+        '<div class="report-card" id="card-psychology"><div class="card-header"><div class="card-icon psych">' + icons.psych + '</div><div class="card-label psych">Psychology Check</div></div><div class="card-body"><strong>Biases Detected</strong><div style="margin:8px 0 12px">' + (biasesHtml || '<span style="color:var(--text-muted)">None detected</span>') + '</div><ul>' + biasDetails + '</ul><strong>Priority Alignment:</strong> ' + (psych.alignment_score || '?') + '/10<div class="gut-check">' + (psych.gut_check_question || 'No question generated.') + '</div></div></div>' +
+        '<div class="report-card" id="card-verdict"><div class="card-header"><div class="card-icon verdict">' + icons.verdict + '</div><div class="card-label verdict">Final Verdict</div></div><div class="card-body"><div class="verdict-text">' + verdict + '</div></div></div>';
       reportSection.classList.add('visible');
-      setTimeout(() => reportSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
-
-      // Animate risk bar
-      setTimeout(() => {
-        const fill = document.querySelector('.risk-bar-fill');
-        if (fill) fill.style.width = riskPercent + '%';
-      }, 600);
+      setTimeout(function() { reportSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+      setTimeout(function() { var fill = document.querySelector('.risk-bar-fill'); if (fill) fill.style.width = riskPercent + '%'; }, 600);
     }
-
-    /* ── Reset ──────────────────────────────────────────────────────── */
     function resetApp() {
       if (statusInterval) clearInterval(statusInterval);
       document.getElementById('decision').value = '';
