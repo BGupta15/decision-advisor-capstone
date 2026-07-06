@@ -29,43 +29,36 @@ A single orchestrator consolidates all three analyses into a unified verdict wit
 │  index.html — Form → fetch /decide → Render Report  │
 └──────────────────────┬──────────────────────────────┘
                        │ POST /decide
-                       │ (X-API-Key header)
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │                 FastAPI Backend                       │
-│  main.py — Rate Limiting · Auth · Input Sanitization │
+│  main.py — Rate Limiting · Input Sanitization ·      │
+│            Secure Error Handling                     │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │              Orchestrator Agent                       │
-│  orchestrator.py — Gemini 3.5 Flash via google-genai │
+│  orchestrator.py — powered by Groq (LLaMA 3.3 70B)   │
 │  • Builds consolidated prompt                        │
-│  • Parses structured JSON response                   │
-│  • Retries on rate limits (429) with exponential backoff │
-│  • Synthesizes verdict from all three analyses       │
+│  • Calls Market / Risk / Psychology sub-agents       │
+│  • Parses structured JSON responses                  │
+│  • Synthesizes a unified verdict                     │
 └─────────────────────────────────────────────────────┘
 ```
 
 ### Agent Pipeline
 
 ```
-User Input ──→ Orchestrator ──→ Gemini 3.5 Flash
+User Input ──→ Orchestrator ──→ Groq (LLaMA 3.3 70B)
                     │
-                    ├── MARKET analysis  (opportunities, threats, timing)
-                    ├── RISK analysis    (score, best/worst case, recommendation)
-                    └── PSYCHOLOGY analysis (biases, alignment, gut check)
+                    ├── MARKET analysis      (opportunities, threats, timing)
+                    ├── RISK analysis        (score, best/worst case, recommendation)
+                    └── PSYCHOLOGY analysis  (biases, alignment, gut check)
                     │
                     ▼
               Unified Verdict (JSON + human-readable summary)
 ```
-
-### API Design
-
-| Endpoint | Method | Description | Auth |
-|----------|--------|-------------|------|
-| `/` | GET | Serves the single-page frontend | — |
-| `/decide` | POST | Runs the full analysis pipeline | X-API-Key header |
 
 ### Request Schema (`POST /decide`)
 
@@ -82,28 +75,25 @@ User Input ──→ Orchestrator ──→ Gemini 3.5 Flash
 ## Security Features
 
 - **Rate Limiting** — 5 requests per minute per IP via `slowapi`
-- **Input Sanitization** — Regex-based prompt injection detection + 2000-char field truncation
-- **Secure Error Handling** — Generic messages to clients, full tracebacks logged server-side
+- **Input Sanitization** — Regex-based prompt injection detection + 2000-char field truncation, enforced via a Pydantic field validator
+- **Secure Error Handling** — Generic messages returned to clients; full tracebacks logged server-side with a correlation ID for debugging
 
 ## Tech Stack
 
 | Component | Technology |
 |-----------|------------|
 | Backend | FastAPI + Uvicorn |
-| AI (Orchestrator) | Google Gemini 3.5 Flash via `google-genai` |
-| AI (Sub-agents) | Groq LLaMA 3.3 70B via `groq` |
+| AI (sub-agents & orchestrator) | Groq LLaMA 3.3 70B via the `groq` SDK |
 | Frontend | Vanilla HTML/CSS/JS (single-page) |
-| Rate Limiting | slowapi |
-| Config | python-dotenv |
+| Rate Limiting | `slowapi` |
+| Config | `python-dotenv` |
 
 ## Setup & Installation
 
 ### Prerequisites
 
 - Python 3.10+
-- API keys for:
-  - [Google AI Studio](https://aistudio.google.com/apikey) (Gemini)
-  - [Groq](https://console.groq.com/keys) (LLaMA)
+- API key for [Groq](https://console.groq.com/keys) (LLaMA)
 
 ### 1. Clone & create virtual environment
 
@@ -130,12 +120,8 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 
 ```env
-GEMINI_API_KEY=your-google-gemini-api-key
 GROQ_API_KEY=your-groq-api-key
-API_KEY=your-chosen-api-key-for-auth
 ```
-
-> **Note:** If `API_KEY` is omitted, authentication is disabled (development mode).
 
 ### 4. Run the server
 
@@ -149,28 +135,24 @@ Open [http://localhost:8000](http://localhost:8000) in your browser.
 
 ```
 decision-advisor-capstone/
-├── main.py                      # FastAPI app, routes, security middleware
+├── main.py                      # FastAPI app, routes, security wiring
+├── security.py                  # Rate limiting, sanitization, error handling
 ├── index.html                   # Single-page frontend (HTML/CSS/JS)
 ├── requirements.txt             # Python dependencies
 ├── .env                         # API keys (git-ignored)
 ├── .gitignore
-├── agents/
-│   ├── __init__.py
-│   ├── orchestrator.py          # Central AI pipeline (Gemini)
-│   ├── groq_client.py           # Groq API client initialization
-│   ├── market_agent.py          # Market analysis sub-agent
-│   ├── risk_agent.py            # Risk assessment sub-agent
-│   └── psychology_agent.py      # Cognitive bias detection sub-agent
-└── tools/
-    └── search_tool.py           # Google Search grounding tool
+└── agents/
+    ├── __init__.py
+    ├── orchestrator.py          # Central AI pipeline (Groq)
+    ├── market_agent.py          # Market analysis sub-agent
+    ├── risk_agent.py            # Risk assessment sub-agent
+    └── psychology_agent.py      # Cognitive bias detection sub-agent
 ```
 
 ## How It Works
 
 1. **User submits a decision** via the form (what, risk tolerance, priority, timeline, past context)
-2. **FastAPI validates and sanitizes** the input, checks the API key, and applies rate limits
-3. **Orchestrator** constructs a consolidated prompt and sends it to Gemini 3.5 Flash
-4. **Gemini returns structured JSON** with market, risk, and psychology analyses
-5. **Orchestrator builds a verdict** — a human-readable summary with a risk signal (Low/Moderate/High)
-6. **Frontend renders the report** in four cards: Market Analysis, Risk Assessment, Psychology Check, and Final Verdict
-
+2. **FastAPI validates and sanitizes** the input and applies rate limiting
+3. **Orchestrator** constructs a consolidated prompt and dispatches it to the Market, Risk, and Psychology sub-agents via Groq
+4. **Orchestrator builds a verdict** — a human-readable summary with a risk signal (Low / Moderate / High)
+5. **Frontend renders the report** in four cards: Market Analysis, Risk Assessment, Psychology Check, and Final Verdict
